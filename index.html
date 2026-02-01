@@ -1,0 +1,263 @@
+<!- ****************************** -!>
+<!- CALCULADORA FISCAL IMOBILIÁRIA -!>
+<!- Versão 1.528                   -!>
+<!- 1 de Fevereiro de 2026         -!>
+<!- ****************************** -!>
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculadora Fiscal Imobiliária</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a5f7a">
+    
+    <script src="html2pdf.bundle.min.js"></script>
+    <script src="taxas.js"></script>
+    
+    <style>
+        :root { --primary: #1a5f7a; --bg: #f4f7f6; --accent: #27ae60; --text: #333; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); padding: 15px; color: var(--text); display: flex; justify-content: center; margin: 0; }
+        
+        .calc-card { background: white; max-width: 650px; width: 100%; padding: 25px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); box-sizing: border-box; }
+        .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid var(--bg); padding-bottom: 10px; }
+        .logo { max-width: 105px; height: auto; margin-bottom: 8px; }
+        .consultor-input { width: 100%; border: none; border-bottom: 1px solid #ddd; text-align: center; margin-bottom: 15px; font-style: italic; color: #666; padding: 5px; background: transparent; font-size: 1rem; }
+        
+        .oe-mention { font-size: 0.72rem; color: #7f8c8d; margin-top: 5px; font-weight: normal; }
+        
+        .field { margin-bottom: 12px; }
+        label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; color: #555; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+
+        .box-compropriedade { background: #f9fbfc; padding: 12px; border-radius: 10px; border: 1px solid #e1e8ed; margin-bottom: 15px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        hr { border: 0; border-top: 1px solid #eee; margin: 10px 0; }
+        
+        .results { margin-top: 15px; display: none; }
+        .results-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .results-grid.split { grid-template-columns: 1fr 1fr; }
+        .result-item { padding: 12px; background: #fff; border: 1px solid #eee; border-radius: 10px; }
+        .result-item strong { color: var(--primary); display: block; margin-bottom: 5px; border-bottom: 1px solid #f4f7f6; padding-bottom: 3px; font-size: 0.88rem; }
+        .row { display: flex; justify-content: space-between; margin: 4px 0; font-size: 0.82rem; }
+        .total-global { margin-top: 12px; padding: 10px; background: var(--primary); color: white; border-radius: 10px; text-align: center; font-size: 1.05rem; font-weight: bold; }
+
+        .disclaimer { font-size: 0.58rem; color: #7f8c8d; line-height: 1.2; margin: 8px 0; text-align: justify; border-left: 3px solid var(--primary); padding-left: 8px; }
+        .footer-credits { font-size: 0.58rem; color: #bdc3c7; text-align: center; margin-top: 8px; border-top: 1px solid #f1f1f1; padding-top: 5px; }
+
+        .btn-container { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        button { flex: 1; min-width: 110px; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: 0.3s; }
+        .btn-calc { background: var(--primary); color: white; }
+        .btn-pdf { background: var(--accent); color: white; display: none; }
+        .btn-clear { background: #95a5a6; color: white; }
+
+        /* CSS para o PDF */
+        .pdf-export-style { width: 600px !important; padding: 20px !important; background: white !important; transform: scale(0.92); transform-origin: top center; }
+        .pdf-export-style .btn-container { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="calc-card" id="conteudo-pdf">
+    <div class="header">
+        <input type="text" id="consultor-nome" class="consultor-input" placeholder="Introduza o seu nome (opcional):">
+        <img src="fulllogo.jpg" alt="Logo" class="logo">
+        <h2 style="margin:0; color: var(--primary); font-size: 1.2rem;">Calculadora Fiscal Imobiliária</h2>
+        <div class="oe-mention">Tabelas de IMT e IS Portugal Continental - OE2026</div>
+    </div>
+
+    <div class="field">
+        <label>Valor do Imóvel</label>
+        <input type="text" id="valor_display" placeholder="Ex: 350.000 €" onblur="formatarInputMoeda(this)">
+        <input type="hidden" id="valor_real">
+    </div>
+
+    <div class="field">
+        <label>Tipo de Aquisição / Regime</label>
+        <select id="estado_civil" onchange="toggleCompropriedade()">
+            <option value="casados">Liquidação Única</option>
+            <option value="solteiros">Múltiplas Liquidações</option>
+        </select>
+    </div>
+
+    <div class="field">
+        <label>Finalidade</label>
+        <select id="tipo">
+            <option value="h_permanente">Habitação Própria Permanente</option>
+            <option value="h_secundaria">Habitação Secundária</option>
+            <option value="rustico">Prédio Rústico</option>
+            <option value="outros">Outros Prédios Urbanos</option>
+        </select>
+    </div>
+
+    <div id="bloco-casados" class="field">
+        <label>Beneficia de IMT Jovem?</label>
+        <select id="jovem_geral">
+            <option value="nao">Não</option>
+            <option value="sim">Sim</option>
+        </select>
+    </div>
+
+    <div id="bloco-solteiros" style="display: none;">
+        <div class="box-compropriedade">
+            <div class="grid-2">
+                <div><label>% Titular 1</label><input type="number" id="quota1" value="50" oninput="ajustarQuotas(this)"></div>
+                <div><label>Jovem?</label><select id="j1"><option value="nao">Não</option><option value="sim">Sim</option></select></div>
+            </div>
+            <hr>
+            <div class="grid-2">
+                <div><label>% Titular 2</label><input type="number" id="quota2" value="50" oninput="ajustarQuotas(this)"></div>
+                <div><label>Jovem?</label><select id="j2"><option value="nao">Não</option><option value="sim">Sim</option></select></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="res-box" class="results">
+        <div id="resultados-lista" class="results-grid"></div>
+        <div id="res-total-global" class="total-global"></div>
+    </div>
+
+    <div class="disclaimer">
+        <strong>Aviso Legal:</strong> Informação meramente indicativa. Deve ser sempre confirmada pela declaração oficial da AT. Os valores calculados não vinculam o autor.
+    </div>
+
+    <div class="btn-container">
+        <button type="button" class="btn-calc" onclick="executarCalculo()">Simular Cálculo</button>
+        <button type="button" id="btn-pdf" class="btn-pdf" onclick="gerarPDF()">Baixar PDF</button>
+        <button type="button" class="btn-clear" onclick="limparSimulacao()">Limpar</button>
+    </div>
+
+    <div class="footer-credits">
+        <div>© 2026 Lawstreet - Ilídio G. de Oliveira. Todos os direitos reservados.</div>
+        <div style="font-size: 0.5rem;">Versão 1.58 (Atualizado em 01/02/2026)</div>
+    </div>
+</div>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
+    }
+
+    function formatarComPonto(valor) {
+        let partes = valor.toFixed(2).split('.');
+        partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        return partes.join(',') + ' €';
+    }
+
+    function formatarInputMoeda(el) {
+        let val = el.value.replace(/\D/g, "");
+        if (val === "") return;
+        let num = parseFloat(val);
+        document.getElementById('valor_real').value = num;
+        let txt = num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        el.value = txt + ' €';
+    }
+
+    function ajustarQuotas(elem) {
+        let val = Math.min(100, parseFloat(elem.value) || 0);
+        elem.value = val;
+        if (elem.id === 'quota1') document.getElementById('quota2').value = (100 - val).toFixed(2);
+        else document.getElementById('quota1').value = (100 - val).toFixed(2);
+    }
+
+    function toggleCompropriedade() {
+        let multi = document.getElementById('estado_civil').value === 'solteiros';
+        document.getElementById('bloco-solteiros').style.display = multi ? 'block' : 'none';
+        document.getElementById('bloco-casados').style.display = multi ? 'none' : 'block';
+    }
+
+    function calcular(vT, tipo, j, q) {
+        let valorQ = vT * (q / 100);
+        let is = valorQ * TABELAS_IMT.is_taxa;
+        let imt = 0;
+        try {
+            let tab = (j && tipo === 'h_permanente') ? TABELAS_IMT.continente.imt_jovem : TABELAS_IMT.continente[tipo];
+            let esc = tab.find(i => vT <= i.limite) || tab[tab.length - 1];
+            imt = ((vT * esc.taxa) - esc.abater) * (q / 100);
+        } catch(e) {}
+        imt = Math.max(0, imt);
+        return { imt, is, total: imt + is };
+    }
+
+    function itemHTML(t, d) {
+        return `<div class="result-item"><strong>${t}</strong>
+                <div class="row"><span>IMT:</span><span>${formatarComPonto(d.imt)}</span></div>
+                <div class="row"><span>Selo:</span><span>${formatarComPonto(d.is)}</span></div>
+                <div class="row" style="font-weight:bold; border-top:1px solid #eee; padding-top:4px;">
+                <span>Subtotal:</span><span>${formatarComPonto(d.total)}</span></div></div>`;
+    }
+
+    function executarCalculo() {
+        let vTotal = parseFloat(document.getElementById('valor_real').value);
+        if (isNaN(vTotal) || vTotal <= 0) return alert("Introduza o valor do imóvel.");
+
+        let tipo = document.getElementById('tipo').value;
+        let estado = document.getElementById('estado_civil').value;
+        let lista = document.getElementById('resultados-lista');
+        let html = ""; let total = 0;
+
+        if (estado === 'casados') {
+            lista.classList.remove('split');
+            let res = calcular(vTotal, tipo, document.getElementById('jovem_geral').value === 'sim', 100);
+            html = itemHTML("Titularidade Única", res);
+            total = res.total;
+        } else {
+            lista.classList.add('split');
+            let q1 = parseFloat(document.getElementById('quota1').value) || 0;
+            let q2 = parseFloat(document.getElementById('quota2').value) || 0;
+            let r1 = calcular(vTotal, tipo, document.getElementById('j1').value === 'sim', q1);
+            let r2 = calcular(vTotal, tipo, document.getElementById('j2').value === 'sim', q2);
+            html = itemHTML("Titular 1 ("+q1+"%)", r1) + itemHTML("Titular 2 ("+q2+"%)", r2);
+            total = r1.total + r2.total;
+        }
+
+        lista.innerHTML = html;
+        document.getElementById('res-total-global').innerText = "TOTAL A PAGAR: " + formatarComPonto(total);
+        document.getElementById('res-box').style.display = 'block';
+        document.getElementById('btn-pdf').style.display = 'inline-block';
+    }
+
+    function gerarPDF() {
+        const element = document.getElementById('conteudo-pdf');
+        const clone = element.cloneNode(true);
+        
+        // Sincronizar inputs
+        const inputs = element.querySelectorAll('input, select');
+        const cloneInputs = clone.querySelectorAll('input, select');
+        inputs.forEach((inp, i) => { cloneInputs[i].value = inp.value; });
+
+        // Adicionar estilo de exportação
+        clone.classList.add('pdf-export-style');
+
+        // Contentor visível mas fora do ecrã lateral (evita página em branco no Android)
+        const container = document.createElement('div');
+        Object.assign(container.style, { position: 'absolute', left: '-2000px', top: '0', width: '600px' });
+        container.appendChild(clone);
+        document.body.appendChild(container);
+
+        const opt = {
+            margin: 0.2,
+            filename: 'Simulacao_Lawstreet.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false, width: 600 },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(clone).toPdf().get('pdf').then(function (pdf) {
+            const blobUrl = URL.createObjectURL(pdf.output('blob'));
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = 'Simulacao_Fiscal_Lawstreet.pdf';
+            link.click();
+            document.body.removeChild(container);
+        }).catch(err => {
+            console.error(err);
+            if(container.parentNode) document.body.removeChild(container);
+        });
+    }
+
+    function limparSimulacao() { window.location.reload(); }
+</script>
+</body>
+</html>
