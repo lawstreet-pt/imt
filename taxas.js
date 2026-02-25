@@ -1,24 +1,23 @@
 /**
  * TABELAS DE IMT E IMPOSTO DO SELO 2026 - PORTUGAL CONTINENTE
  * Valores atualizados conforme o Orçamento do Estado.
+ * Valores atualizados com benefício Jovem integrado (IMT + IS)
  */
 
 const TABELAS_IMT = {
-    is_taxa: 0.008, // Imposto do Selo: 0.8% (Taxa Fixa)
+    is_taxa: 0.008, // Taxa padrão 0.8%
 
     continente: {
-        // Habitação Própria e Permanente (Progressivo)
         h_permanente: [
             { limite: 106346, taxa: 0, abater: 0 },
             { limite: 145470, taxa: 0.02, abater: 2126.92 },
             { limite: 198347, taxa: 0.05, abater: 6491.02 },
             { limite: 330539, taxa: 0.07, abater: 10457.96 },
             { limite: 660982, taxa: 0.08, abater: 13763.35 },
-            { limite: 1150853, taxa: 0.06, abater: 0 }, // Taxa única acima de 633k até 1.1M
-            { limite: Infinity, taxa: 0.075, abater: 0 } // Taxa única acima de 1.1M
+            { limite: 1150853, taxa: 0.06, abater: 0 },
+            { limite: Infinity, taxa: 0.075, abater: 0 }
         ],
 
-        // Habitação Secundária ou Arrendamento (Progressivo)
         h_secundaria: [
             { limite: 106346, taxa: 0.01, abater: 0 },
             { limite: 145470, taxa: 0.02, abater: 1063.46 },
@@ -29,22 +28,15 @@ const TABELAS_IMT = {
             { limite: Infinity, taxa: 0.075, abater: 0 }
         ],
 
-        // Prédios Rústicos (Taxa Fixa de 5%)
-        rustico: [
-            { limite: Infinity, taxa: 0.05, abater: 0.00 }
-        ],
+        rustico: [{ limite: Infinity, taxa: 0.05, abater: 0 }],
+        outros: [{ limite: Infinity, taxa: 0.065, abater: 0 }],
 
-        // Prédios Urbanos não habitacionais (Comercial, Escritórios, Terrenos para Construção)
-        outros: [
-            { limite: Infinity, taxa: 0.065, abater: 0.00 }
-        ],
-
-        // IMT JOVEM (Isenção até 316.772€ para HPP)
+        // IMT E IS JOVEM INTEGRADOS
         imt_jovem: [
-            { limite: 330539, taxa: 0, abater: 0 },
-            { limite: 660982, taxa: 0.08, abater: 26443.12 },
-            { limite: 1150853, taxa: 0.06, abater: 0 },
-            { limite: Infinity, taxa: 0.075, abater: 0 }
+            { limite: 330539, taxa: 0, abater: 0, taxa_is: 0, abater_is: 0 },
+            { limite: 660982, taxa: 0.08, abater: 26443.12, taxa_is: 0.008, abater_is: 2644.31 },
+            { limite: 1150853, taxa: 0.06, abater: 0, taxa_is: 0.008, abater_is: 0 },
+            { limite: Infinity, taxa: 0.075, abater: 0, taxa_is: 0.008, abater_is: 0 }
         ]
     }
 };
