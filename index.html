@@ -155,7 +155,7 @@
         imt = ((vT * esc.taxa) - esc.abater) * (q / 100);
         
         if (j && tipo === 'h_permanente') {
-            is = ((vT * esc.taxa_is) - esc.abater_is) * (q / 100);
+            is = ((vT * TABELAS_IMT.is_taxa) - TABELAS_IMT.is_jovem_deducao) * (q / 100);
         } else {
             is = (vT * (q / 100)) * TABELAS_IMT.is_taxa;
         }

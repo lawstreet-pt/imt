@@ -5,7 +5,8 @@
  */
 
 const TABELAS_IMT = {
-    is_taxa: 0.008, // Taxa padrão 0.8%
+    is_taxa: 0.008, // Taxa padrão 0,8%
+    is_jovem_deducao: 2644.312, // Dedução máxima IS Jovem 2026
 
     continente: {
         h_permanente: [
@@ -33,10 +34,10 @@ const TABELAS_IMT = {
 
         // IMT E IS JOVEM INTEGRADOS
         imt_jovem: [
-            { limite: 330539, taxa: 0, abater: 0, taxa_is: 0, abater_is: 0 },
-            { limite: 660982, taxa: 0.08, abater: 26443.12, taxa_is: 0.008, abater_is: 2644.31 },
-            { limite: 1150853, taxa: 0.06, abater: 0, taxa_is: 0.008, abater_is: 0 },
-            { limite: Infinity, taxa: 0.075, abater: 0, taxa_is: 0.008, abater_is: 0 }
+            { limite: 330539, taxa: 0, abater: 0 },
+            { limite: 660982, taxa: 0.08, abater: 26443.12 },
+            { limite: 1150853, taxa: 0.06, abater: 0 },
+            { limite: Infinity, taxa: 0.075, abater: 0 }
         ]
     }
 };
