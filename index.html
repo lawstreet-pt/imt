@@ -1,7 +1,7 @@
 <!- ****************************** -!>
 <!- CALCULADORA FISCAL IMOBILIÁRIA -!>
-<!- Versão 1.530                   -!>
-<!- 29 de Agosto de 2026           -!>
+<!- Versão 1.531                   -!>
+<!- 30 de Agosto de 2026           -!>
 <!- ****************************** -!>
 <!DOCTYPE html>
 <html lang="pt">
@@ -104,7 +104,7 @@
     </div>
 
     <div class="disclaimer">
-        <strong>Aviso Legal:</strong> Informação indicativa. O benefício Jovem aplica-se à 1.ª aquisição para HPP (limite 35 anos). Confirme sempre com a Autoridade Tributária.
+        <strong>Aviso Legal:</strong> Os valores apresentados por esta calculadora são meramente indicativos, não constituem liquidação oficial de IMT ou Imposto do Selo, não vinculam nem comprometem o autor e não substituem a declaração ou liquidação emitida pela Autoridade Tributária e Aduaneira (AT). A aplicação da legislação fiscal depende das circunstâncias concretas de cada operação e da legislação em vigor à data do facto tributário. No caso do IMT Jovem, a atribuição do benefício está sujeita às condições e limites legalmente previstos. Recomenda-se a confirmação dos valores e da elegibilidade junto da AT antes de qualquer decisão ou operação.
     </div>
 
     <div class="btn-container">
@@ -115,7 +115,7 @@
 
     <div class="footer-credits">
         <div>© 2026 Lawstreet - Ilídio G. de Oliveira. Todos os direitos reservados.</div>
-        <div style="font-size: 0.5rem;">Versão 1.530 (Actualizada em 29/08/2026)</div>
+        <div style="font-size: 0.5rem;">Versão 1.531 (Actualizada em 30/08/2026)</div>
     </div>
 </div>
 
@@ -220,7 +220,28 @@
         }).from(clone).save().then(() => document.body.removeChild(container));
     }
 
-    function limparSimulacao() { window.location.reload(); }
+    function limparSimulacao() {
+        document.getElementById('consultor-nome').value = "";
+        document.getElementById('valor_display').value = "";
+        document.getElementById('valor_real').value = "";
+
+        document.getElementById('estado_civil').value = "casados";
+        document.getElementById('tipo').value = "h_permanente";
+        document.getElementById('jovem_geral').value = "nao";
+
+        document.getElementById('quota1').value = "50";
+        document.getElementById('quota2').value = "50";
+        document.getElementById('j1').value = "nao";
+        document.getElementById('j2').value = "nao";
+
+        document.getElementById('resultados-lista').innerHTML = "";
+        document.getElementById('res-total-global').innerText = "";
+        document.getElementById('res-box').style.display = "none";
+        document.getElementById('btn-pdf').style.display = "none";
+
+        document.getElementById('bloco-solteiros').style.display = "none";
+        document.getElementById('bloco-casados').style.display = "block";
+    }
 </script>
 </body>
 </html>
